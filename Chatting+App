@@ -1,0 +1,215 @@
+//
+//  ChartBar.swift
+//  LivingsRoom
+//
+//  Created by App-Designer2 . on 22.09.19.
+//  Copyright © 2019 App-Designer2 . All rights reserved.
+//
+
+import SwiftUI
+
+
+struct ChartBar: View {
+    @Environment(\.managedObjectContext) var moc
+    @FetchRequest(entity: EntityData.entity(), sortDescriptors: [
+        NSSortDescriptor(keyPath: \EntityData.names, ascending: true)
+    ]) var addInfo: FetchedResults<EntityData>
+    
+     //@State var comments: Livingroom
+    
+    @State private  var AddComment: String = ""
+    
+    @State private var validate: Bool = false
+    
+    @State private   var image: Image? = nil
+    
+    @State private  var showImagePicker: Bool = false
+    
+    //var colores: Colors
+    
+    var colors: [Color] = [.blue, .green, .red, .purple, .pink, .yellow, .orange]
+    
+    //@State private var addPerfil: Bool = false
+    
+    static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        return formatter
+    }()
+    
+    var date = Date()
+    var body: some View {
+        NavigationView {
+            VStack {
+            List {
+                
+                Section(header: Text("Today").font(.system(size: 20)).foregroundColor(.gray)) {
+                ForEach(self.addInfo, id: \.self) { add in
+                   
+                    HStack {
+                        //self.image?.resizable()
+//                            .resizable()
+//                        .clipShape(Circle())
+//                        .frame(width: 40, height: 40)
+//                        .overlay(Circle().stroke(Color.black, lineWidth: 2))
+//
+                        Image("hola-\(Int.random(in: 1...7))")
+                        .resizable()
+                        .clipShape(Circle())
+                        .frame(width: 40, height: 40)
+                        .overlay(Circle().stroke(Color.black, lineWidth: 2))
+                            
+                       
+                        Text("\(add.names ?? "\(String(describing: add.image))")" ).padding()
+                        .coordinateSpace(name: 0)
+                            .lineLimit(nil)
+                        .font(.subheadline)
+                            .foregroundColor(.white)
+                                .background(Color.blue)
+                                    /*(self.AddComment.count > 5) ?
+                                    Color.green :
+                                    Color.blue)*/
+                                .shadow(color: .gray, radius: 5.2)
+                            .cornerRadius(30)
+                        Spacer()
+                        Text("\(self.date, formatter: Self.dateFormatter)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                    }
+            }.onDelete(perform: deleteComment)
+                }
+            }
+            
+                Spacer()
+                
+                 if self.AddComment.count > 2 {
+                            Text("Thank you 😇").padding()
+                                .foregroundColor(.white)
+                                .background(Color.green)
+                                .opacity(0.55)
+                            .cornerRadius(8)
+                            .shadow(radius: 4)
+
+                 } else {
+                    Text("")
+                }
+                 
+                
+                          HStack {
+                           TextField("Comment...",  text: self.$AddComment).padding(10)
+                               //.background(Color(red: 239.0/255.0, green: 243.0/255.0, blue: 244.0/255.0))
+                            .cornerRadius( 5.0)
+                            
+                            Button(action: {
+                                self.showImagePicker.toggle()
+                            }) {
+                            Image(systemName: "camera").foregroundColor(.gray)
+                                
+                            }
+                                           //try? self.moc.save()
+                            
+
+                              Button(action: {
+                                self.validate = true
+
+                                let comment = EntityData(context: self.moc)
+                               comment.names = self.AddComment
+                                //comment.image = self.imag
+                                //comment.msg = Int32(self.countCommen.nonzeroBitCount)
+                                 
+                                do {
+                                  try? self.moc.save()
+                                } catch {
+                                    fatalError("The info didnt save :(")
+                                }
+                                  self.AddComment = ""
+                                
+                              }) {
+                                Image(systemName:  "paperplane.fill").foregroundColor((AddComment.count > 0) ?
+                                Color.blue :
+                                    Color.gray).font(.system(size: 20))
+
+                              }.padding(.trailing, 3)
+                                   // .background((AddComment.count > 0) ?
+//                              Color.blue :
+//                              Color.gray)
+//                              .clipShape(RoundedRectangle(cornerRadius: 6))
+//                               .shadow(color: .gray,radius: 1)
+                }.padding(5)
+                
+                
+            }.navigationBarTitle(Text("Comments"))
+//                .sheet(isPresented: self.$showcamera) {
+//                 ImagePicker(showImagePicker: self.$showcamera, image: self.$image)
+//                }
+                
+            
+            //Spacer()
+//            VStack {
+//                              HStack {
+//                               TextField("Comment...",  text: self.$AddComment).padding(10)
+//                                   .background(Color(red: 239.0/255.0, green: 243.0/255.0, blue: 244.0/255.0)) .cornerRadius( 5.0)
+//
+//
+//                                  Button(action: {
+//
+//                                      let comment = EntityData(context: self.moc)
+//                                   comment.names = self.AddComment
+//                                   comment.msg = Int32(self.countCommen)
+//
+//                                      do {
+//                                      try? self.moc.save()
+//                                      } catch {
+//                                          fatalError("The info didnt save :(")
+//                                      }
+//                                      self.AddComment = ""
+//                                  }) {
+//                                   Text("Send").foregroundColor(.white).padding(10)
+//
+//                                  }.background((AddComment.count > 0) ?
+//                                  Color.pink :
+//                                  Color.gray)
+//                                  .clipShape(RoundedRectangle(cornerRadius: 6))
+//                                   .shadow(color: .pink,radius: 1)
+//                              }//.offset(y: 20)
+//                       }
+//            Spacer()
+            
+            //.navigationBarItems(trailing: EditButton())
+            .sheet(isPresented: self.$showImagePicker) {
+                ImagePicker(showImagePicker: self.$showImagePicker, image: .constant(UIImage(contentsOfFile: "")))
+//                Button(action: {
+//                    self.validate.toggle()
+//                }) {
+//                    Image(systemName: self.validate ? "camera.fill": "camera").font(.largeTitle).foregroundColor(.blue) }
+                //ImagePicker(showImagePicker: self.$showcamera, image: self.$image)
+            }
+            //try? self.moc.save()
+            
+    }// .colorScheme(.light)
+    }
+
+    func deleteComment(at offsets: IndexSet) {
+        for index in offsets {
+            let comenta = addInfo[index]
+            moc.delete(comenta)
+        }
+        try? self.moc.save()
+    }
+}
+
+struct ChartBar_Previews: PreviewProvider {
+    static var previews: some View {
+        ChartBar()
+    }
+}
+
+//struct PhotoCamera: View {
+//    @Binding var showImagePicker: Bool
+//    @Binding var image: UIImage?
+//
+//    var body: some View {
+//        ImagePicker(showImagePicker: .constant(false), image: .constant(UIImage(contentsOfFile: "")))
+//    }
+//}
